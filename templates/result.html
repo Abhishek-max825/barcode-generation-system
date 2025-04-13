@@ -51,14 +51,14 @@
 
         .barcode-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
             margin: 20px 0;
         }
 
         .barcode-item {
             text-align: center;
-            padding: 15px;
+            padding: 10px;
             background: #f8f9fa;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -72,7 +72,6 @@
         .barcode-item img {
             max-width: 100%;
             height: auto;
-            margin-bottom: 10px;
         }
 
         .barcode-text {
@@ -166,7 +165,6 @@
                 {% for barcode_file, data in barcode_files %}
                 <div class="barcode-item">
                     <img src="{{ url_for('static', filename='barcodes/' + barcode_file) }}" alt="{{ data }}">
-                    <div class="barcode-text">{{ data }}</div>
                 </div>
                 {% endfor %}
             </div>

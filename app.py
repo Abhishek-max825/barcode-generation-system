@@ -5,7 +5,7 @@ import os
 from werkzeug.utils import secure_filename
 import io
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import A3, landscape
 from reportlab.lib.units import inch
 from PIL import Image
 import tempfile
@@ -25,13 +25,14 @@ class BarcodeGenerator:
         code.save(filepath)
         return f"{filename}.png"
 
-    def create_pdf(self, barcode_files, barcodes_per_row=3, barcodes_per_column=4):
+    def create_pdf(self, barcode_files, barcodes_per_row=6, barcodes_per_column=4):
         # Create a temporary file for the PDF
         temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-        c = canvas.Canvas(temp_pdf.name, pagesize=letter)
+        # Use A3 landscape for better fitting of 6x4 grid
+        c = canvas.Canvas(temp_pdf.name, pagesize=landscape(A3))
         
         # Calculate dimensions
-        page_width, page_height = letter
+        page_width, page_height = landscape(A3)
         margin = 0.5 * inch
         barcode_width = (page_width - 2 * margin) / barcodes_per_row
         barcode_height = (page_height - 2 * margin) / barcodes_per_column
@@ -52,12 +53,11 @@ class BarcodeGenerator:
             
             # Draw barcode
             img_path = os.path.join(app.config['UPLOAD_FOLDER'], barcode_file)
-            c.drawImage(img_path, x, y, width=barcode_width, height=barcode_height)
-            
-            # Draw text below barcode
-            text_y = y - 15
-            c.setFont("Helvetica", 10)
-            c.drawString(x + (barcode_width/2) - 20, text_y, data)
+            # Leave some padding around the barcode
+            padding = 10
+            c.drawImage(img_path, x + padding, y + padding, 
+                       width=barcode_width - (2 * padding), 
+                       height=barcode_height - (2 * padding))
             
             # Update position
             current_column += 1
