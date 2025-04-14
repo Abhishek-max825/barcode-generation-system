@@ -25,10 +25,10 @@ class BarcodeGenerator:
         code.save(filepath)
         return f"{filename}.png"
 
-    def create_pdf(self, barcode_files, barcodes_per_row=6, barcodes_per_column=4):
+    def create_pdf(self, barcode_files, barcodes_per_row=10, barcodes_per_column=10):
         # Create a temporary file for the PDF
         temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-        # Use A3 landscape for better fitting of 6x4 grid
+        # Use A3 landscape for better fitting of 10x10 grid
         c = canvas.Canvas(temp_pdf.name, pagesize=landscape(A3))
         
         # Calculate dimensions
@@ -54,7 +54,7 @@ class BarcodeGenerator:
             # Draw barcode
             img_path = os.path.join(app.config['UPLOAD_FOLDER'], barcode_file)
             # Leave some padding around the barcode
-            padding = 10
+            padding = 5  # Reduced padding to fit more barcodes
             c.drawImage(img_path, x + padding, y + padding, 
                        width=barcode_width - (2 * padding), 
                        height=barcode_height - (2 * padding))
