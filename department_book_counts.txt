@@ -1,0 +1,33 @@
+DEPARTMENT BOOK COUNT REPORT
+===========================
+Generated on: 2025-04-20 19:02:46
+
+Total number of books: 9458
+Total number of departments: 19
+
+DEPARTMENT WISE BOOK COUNT:
+--------------------------
+Reserch Methodology       :     1 books
+Encyclopedia              :     3 books
+Dictionary                :     4 books
+Sanskrit                  :     5 books
+Physical Education        :     6 books
+Year Book                 :    13 books
+General Science           :    23 books
+Hindi                     :    29 books
+Mathematics               :    36 books
+Chemistry                 :    42 books
+Physics                   :    42 books
+Competitive Exam          :   157 books
+English                   :   309 books
+Computer Science          :   315 books
+Political Science         :   369 books
+Economics                 :  1106 books
+Kannada                   :  1501 books
+Management                :  2013 books
+Commerce                  :  3484 books
+
+SUMMARY:
+--------
+Department with minimum books: Reserch Methodology (1 books)
+Department with maximum books: Commerce (3484 books)
