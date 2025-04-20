@@ -105,6 +105,12 @@
             font-size: 1.4rem;
         }
 
+        .department-name {
+            color: #e74c3c;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -165,7 +171,11 @@
     <div class="main-container">
         <div class="info-box">
             <h3>Generation Summary</h3>
+            <p class="mb-0">Department: <span class="department-name">{{ department }}</span></p>
             <p class="mb-0">Total barcodes generated: {{ total_barcodes }}</p>
+            {% if total_barcodes > 350 %}
+            <p class="text-warning mt-2">Note: The PDF will contain a maximum of 350 barcodes (35 pages with 10x10 layout).</p>
+            {% endif %}
         </div>
 
         <div class="barcode-grid">
@@ -178,9 +188,9 @@
         </div>
 
         <div class="action-buttons">
-            <a href="{{ url_for('download') }}" class="btn-action btn-download">
+            <a href="{{ url_for('download_pdf', filename=pdf_filename) }}" class="btn-action btn-download">
                 <i class="fas fa-download"></i>
-                Download PDF
+                Download {{ department }} Barcodes
             </a>
             <a href="{{ url_for('index') }}" class="btn-action btn-generate">
                 <i class="fas fa-barcode"></i>

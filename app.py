@@ -13,6 +13,7 @@ import pandas as pd
 import shutil
 from typing import List, Dict, Tuple, Optional
 import logging
+import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -31,6 +32,44 @@ class DepartmentManager:
     def __init__(self):
         self.departments = self._load_department_codes()
         self.excel_data = self._load_excel_data()
+        # Add department aliases for common variations
+        self.department_aliases = {
+            'economy': 'economics',
+            'econ': 'economics',
+            'eco': 'economics',
+            'comp': 'computer science',
+            'computer': 'computer science',
+            'cs': 'computer science',
+            'comp sci': 'computer science',
+            'physic': 'physics',
+            'phys': 'physics',
+            'math': 'mathematics',
+            'maths': 'mathematics',
+            'management studies': 'management',
+            'mgmt': 'management',
+            'dic': 'dictionary',
+            'dict': 'dictionary',
+            'eng': 'english',
+            'pol': 'political science',
+            'polsci': 'political science',
+            'politics': 'political science',
+            'political': 'political science',
+            'gen sci': 'general science',
+            'general': 'general science',
+            'year': 'year book',
+            'yb': 'year book',
+            'compexam': 'competitive exam',
+            'competitive': 'competitive exam',
+            'phyedu': 'physical education',
+            'physical edu': 'physical education',
+            'pe': 'physical education',
+            'encl': 'encyclopedia',
+            'encyc': 'encyclopedia',
+            'encyclo': 'encyclopedia',
+            'research': 'research methodology',
+            'rm': 'research methodology',
+            'comm': 'commerce'
+        }
     
     def _load_department_codes(self) -> Dict[str, str]:
         """Load department codes from file or use default mapping"""
@@ -83,13 +122,21 @@ class DepartmentManager:
         """Find the best matching department name"""
         dept_lower = department.lower()
         
-        # First try exact match
+        # Check for exact match first
         if dept_lower in self.departments:
             return dept_lower
         
-        # Then try partial match
+        # Check for alias match
+        if dept_lower in self.department_aliases:
+            alias_match = self.department_aliases[dept_lower]
+            if alias_match in self.departments:
+                logger.info(f"Matched department alias '{dept_lower}' to '{alias_match}'")
+                return alias_match
+        
+        # Try partial match
         for dept in self.departments.keys():
             if dept_lower in dept or dept in dept_lower:
+                logger.info(f"Partial match for '{dept_lower}': found '{dept}'")
                 return dept
         
         return None
@@ -98,9 +145,18 @@ class DepartmentManager:
         """Get books for a specific department"""
         matching_dept = self.find_matching_department(department)
         if not matching_dept:
+            logger.warning(f"No matching department found for '{department}'")
             return pd.DataFrame()
         
-        return self.excel_data[self.excel_data['department'].str.lower() == matching_dept]
+        logger.info(f"Found matching department: '{matching_dept}' for input '{department}'")
+        filtered_df = self.excel_data[self.excel_data['department'].str.lower() == matching_dept]
+        
+        if filtered_df.empty:
+            logger.warning(f"No books found for department: {matching_dept}")
+        else:
+            logger.info(f"Found {len(filtered_df)} books for department: {matching_dept}")
+            
+        return filtered_df
 
 class BarcodeGenerator:
     def __init__(self):
@@ -153,7 +209,8 @@ class BarcodeGenerator:
 
     def create_pdf(self, barcode_files: List[Tuple[str, str]], 
                   barcodes_per_row: int = 10, 
-                  barcodes_per_column: int = 10) -> str:
+                  barcodes_per_column: int = 10,
+                  max_pages: int = 35) -> str:
         """Create a PDF with barcodes arranged in a grid"""
         try:
             temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
@@ -166,8 +223,13 @@ class BarcodeGenerator:
             
             current_row = 0
             current_column = 0
+            current_page = 1
             
-            for barcode_file, _ in barcode_files:  # We don't need the data since we're not showing text
+            for barcode_file, barcode_data in barcode_files:
+                if current_page > max_pages:
+                    logger.warning(f"Maximum number of pages ({max_pages}) reached. Some barcodes may not be included.")
+                    break
+                
                 if current_column >= barcodes_per_row:
                     current_column = 0
                     current_row += 1
@@ -176,6 +238,7 @@ class BarcodeGenerator:
                     c.showPage()
                     current_row = 0
                     current_column = 0
+                    current_page += 1
                 
                 x = margin + (current_column * barcode_width)
                 y = page_height - margin - ((current_row + 1) * barcode_height)
@@ -188,20 +251,27 @@ class BarcodeGenerator:
                         img_w, img_h = img.size
                         aspect = img_w / float(img_h)
                         
-                        # Calculate new dimensions
+                        # Calculate new dimensions - make room for text
                         new_w = barcode_width - 10
-                        new_h = new_w / aspect
+                        new_h = (new_w / aspect) * 0.85  # Reduce height to leave room for text
                         
-                        if new_h > barcode_height - 20:
-                            new_h = barcode_height - 20
+                        if new_h > (barcode_height - 20) * 0.85:
+                            new_h = (barcode_height - 20) * 0.85
                             new_w = new_h * aspect
                         
                         # Center the barcode
                         x_offset = (barcode_width - new_w) / 2
-                        y_offset = (barcode_height - new_h) / 2
+                        # Position barcode higher to make room for text
+                        y_offset = (barcode_height - new_h) / 2 + 5
                         
                         c.drawImage(img_path, x + x_offset, y + y_offset, 
                                   width=new_w, height=new_h)
+                        
+                        # Add barcode text below the image
+                        c.setFont("Helvetica", 8)
+                        text_width = c.stringWidth(barcode_data, "Helvetica", 8)
+                        text_x = x + (barcode_width - text_width) / 2
+                        c.drawString(text_x, y + 5, barcode_data)
                         
                     except Exception as e:
                         logger.error(f"Error processing barcode image {barcode_file}: {e}")
@@ -211,6 +281,7 @@ class BarcodeGenerator:
                 current_column += 1
             
             c.save()
+            logger.info(f"PDF created with {current_page} pages containing {len(barcode_files)} barcodes")
             return temp_pdf.name
         except Exception as e:
             logger.error(f"Error creating PDF: {e}")
@@ -240,12 +311,19 @@ def cleanup_old_barcodes():
 def index():
     # Clean up old barcode files before starting new generation
     cleanup_old_barcodes()
+    
+    # Clear session data to prevent issues with previous departments
+    session.clear()
+    
     departments = department_manager.departments
     return render_template('index.html', departments=departments)
 
 @app.route('/generate', methods=['POST'])
 def generate():
     try:
+        # Clear any existing session data to prevent conflicts
+        session.clear()
+        
         selected_department = request.form.get('department')
         if not selected_department:
             flash('Please select a department', 'error')
@@ -301,41 +379,61 @@ def generate():
 
         logger.info(f"Successfully generated {len(barcode_files)} barcodes")
         
-        # Store barcode files in session for download
-        session['barcode_files'] = barcode_files
+        # Generate a unique ID for this batch
+        batch_id = str(uuid.uuid4())
         
-        # Create PDF with 10 columns per row layout
-        pdf_path = barcode_generator.create_pdf(barcode_files, barcodes_per_row=10)
-        session['pdf_path'] = pdf_path
+        # Create PDF directly and save with department name
+        safe_dept_name = secure_filename(selected_department.lower())
+        pdf_filename = f"{safe_dept_name}_barcodes_{batch_id}.pdf"
+        pdf_path = os.path.join(os.getcwd(), 'static', 'pdfs', pdf_filename)
+        
+        # Ensure PDF directory exists
+        os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+        
+        # Create PDF with department name
+        temp_pdf_path = barcode_generator.create_pdf(barcode_files, barcodes_per_row=10, barcodes_per_column=10, max_pages=35)
+        shutil.copy(temp_pdf_path, pdf_path)
+        
+        # Store only what we need for the results page
+        session['pdf_filename'] = pdf_filename
+        session['selected_department'] = selected_department
         
         return render_template('result.html', 
                              barcodes=barcode_files, 
-                             total_barcodes=len(barcode_files))
+                             total_barcodes=len(barcode_files),
+                             department=selected_department,
+                             pdf_filename=pdf_filename)
 
     except Exception as e:
         logger.error(f"Error in generate function: {str(e)}")
         flash(f'An error occurred: {str(e)}', 'error')
         return redirect(url_for('index'))
 
-@app.route('/download')
-def download():
+@app.route('/download/<filename>')
+def download_pdf(filename):
     try:
-        barcode_files = session.get('barcode_files', [])
-        if not barcode_files:
-            flash('No barcodes to download', 'error')
+        # Validate filename to prevent directory traversal
+        if '..' in filename or filename.startswith('/'):
+            logger.error(f"Invalid filename requested: {filename}")
+            flash('Invalid file request', 'error')
+            return redirect(url_for('index'))
+            
+        pdf_path = os.path.join(os.getcwd(), 'static', 'pdfs', filename)
+        
+        if not os.path.exists(pdf_path):
+            logger.error(f"PDF file not found: {pdf_path}")
+            flash('PDF file could not be found. Please regenerate the barcodes.', 'error')
             return redirect(url_for('index'))
         
-        pdf_path = session.get('pdf_path', '')
-        if not pdf_path:
-            flash('No PDF to download', 'error')
-            return redirect(url_for('index'))
+        logger.info(f"Downloading PDF: {filename}")
         
         return send_file(
             pdf_path,
             mimetype='application/pdf',
             as_attachment=True,
-            download_name='barcodes.pdf'
+            download_name=filename
         )
+            
     except Exception as e:
         logger.error(f"Error in download route: {e}")
         flash(f'An error occurred while downloading: {str(e)}', 'error')
