@@ -391,7 +391,7 @@ def generate():
         os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
         
         # Create PDF with department name
-        temp_pdf_path = barcode_generator.create_pdf(barcode_files, barcodes_per_row=10, barcodes_per_column=10, max_pages=35)
+        temp_pdf_path = barcode_generator.create_pdf(barcode_files, barcodes_per_row=5, barcodes_per_column=10, max_pages=100)
         shutil.copy(temp_pdf_path, pdf_path)
         
         # Store only what we need for the results page

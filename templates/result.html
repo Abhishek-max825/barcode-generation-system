@@ -52,7 +52,7 @@
 
         .barcode-grid {
             display: grid;
-            grid-template-columns: repeat(10, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin: 20px 0;
             padding: 20px;
@@ -173,8 +173,8 @@
             <h3>Generation Summary</h3>
             <p class="mb-0">Department: <span class="department-name">{{ department }}</span></p>
             <p class="mb-0">Total barcodes generated: {{ total_barcodes }}</p>
-            {% if total_barcodes > 350 %}
-            <p class="text-warning mt-2">Note: The PDF will contain a maximum of 350 barcodes (35 pages with 10x10 layout).</p>
+            {% if total_barcodes > 1000 %}
+            <p class="text-warning mt-2">Note: The PDF will contain a maximum of 1000 barcodes (100 pages with 5x10 layout).</p>
             {% endif %}
         </div>
 

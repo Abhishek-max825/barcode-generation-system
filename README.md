@@ -1,22 +1,21 @@
 # Barcode Generation System
 
-A web-based barcode generation system built with Flask for DR. B. B. HEGDE FIRST GRADE COLLEGE, KUNDAPURA.
+A Flask-based application for generating barcodes for library books organized by department.
 
 ## Features
 
-- Generate multiple barcodes at once (up to 100)
-- Custom prefix support for barcode numbers
-- Preview generated barcodes in a grid layout
-- Download all barcodes as a single PDF file
-- Mobile-responsive design
-- Clean and intuitive user interface
+- Generate barcodes for books from different departments
+- Organize barcodes in a 5×10 grid layout
+- Download barcodes as PDF (up to 100 pages)
+- Display barcodes with text values underneath
+- Department-specific barcode prefixes
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd barcode-generation-system
+git clone https://github.com/yourusername/barcode-generation.git
+cd barcode-generation
 ```
 
 2. Install required packages:
@@ -24,53 +23,54 @@ cd barcode-generation-system
 pip install -r requirements.txt
 ```
 
-3. Run the application:
+3. Prepare your data:
+   - Place your Excel file with book data as `bookreport_with_codes_final.xlsx`
+   - Create a `department_codes.txt` file with department mappings
+
+## Usage
+
+1. Run the Flask application:
 ```bash
 python app.py
 ```
 
-4. Open your browser and navigate to:
-```
-http://127.0.0.1:5000
-```
+2. Open a browser and navigate to `http://127.0.0.1:5000`
 
-## Usage
+3. Select a department from the dropdown menu
 
-1. Enter the number of barcodes you want to generate (1-100)
-2. Specify a prefix for the barcodes (optional)
-3. Click "Generate Barcodes"
-4. Preview the generated barcodes
-5. Click "Download All" to get a PDF with all barcodes
+4. Click "Generate Barcodes" to create barcodes
 
-## Dependencies
+5. View generated barcodes and click "Download" to get the PDF
 
+## Department Codes
+
+The system supports various departments with specific code prefixes:
+- Chemistry: BBHCCHE
+- Commerce: BBHCCOM 
+- Computer Science: BBHCCSC
+- Economics: BBHCECO
+- English: BBHCENG
+- Kannada: BBHCKAN
+- Management: BBHCMAN
+- Mathematics: BBHCMAT
+- Physics: BBHCPHYS
+- And more...
+
+## File Structure
+
+- `app.py`: Main Flask application
+- `static/barcodes/`: Generated barcode images
+- `static/pdfs/`: Generated PDF files
+- `templates/`: HTML templates for the web interface
+- `department_codes.txt`: Department code mappings
+- `bookreport_copy.xlsx`: Excel data source for book information
+
+## Requirements
+
+- Python 3.6+
 - Flask
+- pandas
 - python-barcode
 - Pillow
 - reportlab
-
-## Directory Structure
-
-```
-barcode-generation-system/
-├── app.py
-├── requirements.txt
-├── static/
-│   ├── barcodes/
-│   └── images/
-└── templates/
-    ├── index.html
-    └── result.html
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+- openpyxl 
