@@ -208,7 +208,7 @@ class BarcodeGenerator:
             raise
 
     def create_pdf(self, barcode_files: List[Tuple[str, str]], 
-                  barcodes_per_row: int = 10, 
+                  barcodes_per_row: int = 4, 
                   barcodes_per_column: int = 10,
                   max_pages: int = 35) -> str:
         """Create a PDF with barcodes arranged in a grid"""
@@ -217,7 +217,7 @@ class BarcodeGenerator:
             c = canvas.Canvas(temp_pdf.name, pagesize=landscape(A3))
             
             page_width, page_height = landscape(A3)
-            margin = 0.5 * inch
+            margin = 0.3 * inch  # Reduced margin for larger barcode area
             barcode_width = (page_width - 2 * margin) / barcodes_per_row
             barcode_height = (page_height - 2 * margin) / barcodes_per_column
             
@@ -252,11 +252,11 @@ class BarcodeGenerator:
                         aspect = img_w / float(img_h)
                         
                         # Calculate new dimensions - make room for text
-                        new_w = barcode_width - 10
-                        new_h = (new_w / aspect) * 0.85  # Reduce height to leave room for text
+                        new_w = barcode_width - 2  # Less padding for larger barcode
+                        new_h = (new_w / aspect) * 0.95  # Use more height for barcode
                         
-                        if new_h > (barcode_height - 20) * 0.85:
-                            new_h = (barcode_height - 20) * 0.85
+                        if new_h > (barcode_height - 8) * 0.95:
+                            new_h = (barcode_height - 8) * 0.95
                             new_w = new_h * aspect
                         
                         # Center the barcode
@@ -268,8 +268,8 @@ class BarcodeGenerator:
                                   width=new_w, height=new_h)
                         
                         # Add barcode text below the image
-                        c.setFont("Helvetica", 8)
-                        text_width = c.stringWidth(barcode_data, "Helvetica", 8)
+                        c.setFont("Helvetica", 14)
+                        text_width = c.stringWidth(barcode_data, "Helvetica", 14)
                         text_x = x + (barcode_width - text_width) / 2
                         c.drawString(text_x, y + 5, barcode_data)
                         
@@ -391,7 +391,7 @@ def generate():
         os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
         
         # Create PDF with department name
-        temp_pdf_path = barcode_generator.create_pdf(barcode_files, barcodes_per_row=5, barcodes_per_column=10, max_pages=100)
+        temp_pdf_path = barcode_generator.create_pdf(barcode_files, barcodes_per_row=4, barcodes_per_column=5, max_pages=100)
         shutil.copy(temp_pdf_path, pdf_path)
         
         # Store only what we need for the results page
